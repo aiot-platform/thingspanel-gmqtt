@@ -9,6 +9,10 @@ on:
         description: "Image tag to build, for example v1.1.6"
         required: false
 
+env:
+  ACR_HOST: crpi-8l7h3z38ikkatd81.cn-shanghai.personal.cr.aliyuncs.com
+  ACR: crpi-8l7h3z38ikkatd81.cn-shanghai.personal.cr.aliyuncs.com/peak-aiot
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,20 +40,16 @@ jobs:
     
     - name: 登录镜像仓库
       run: |
-        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-        echo "${{ secrets.IMAGE_PASS }}" | docker login registry.cn-hangzhou.aliyuncs.com -u ${{ secrets.IMAGE_USER }} --password-stdin
+        echo "${{ secrets.IMAGE_PASS }}" | docker login ${{ env.ACR_HOST }} -u ${{ secrets.IMAGE_USER }} --password-stdin
     
     - name: 设置 Docker Buildx
       uses: docker/setup-buildx-action@v3
       
-    - name: 构建并推送到 GitHub/DockerHub
+    - name: 构建并推送到你的阿里云 ACR
       uses: docker/build-push-action@v5
       with:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          thingspanel/thingspanel-gmqtt:${{ env.VERSION }}
-          ghcr.io/${{ env.OWNER_LC }}/thingspanel-gmqtt:${{ env.VERSION }}
-          registry.cn-hangzhou.aliyuncs.com/thingspanel/thingspanel-gmqtt:${{ env.VERSION }}
+          ${{ env.ACR }}/thingspanel-gmqtt:${{ env.VERSION }}
