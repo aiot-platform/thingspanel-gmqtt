@@ -3,6 +3,9 @@ name: Docker Image Build
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - dev
   workflow_dispatch:
     inputs:
       version:
@@ -25,6 +28,10 @@ jobs:
     - name: 获取版本号
       id: get_version
       run: |
+        if [ "${GITHUB_REF_TYPE}" = "branch" ]; then
+          echo "VERSION=v1.1.6" >> $GITHUB_ENV
+          exit 0
+        fi
         RELEASE_TAG="${{ github.event.release.tag_name }}"
         INPUT_VERSION="${{ github.event.inputs.version }}"
         if [ -n "$RELEASE_TAG" ]; then
